@@ -1,17 +1,29 @@
 library(shiny)
 library(tidyverse)
 library(anytime)
+library(scales)
+theme_set(theme_bw())
 
-clean_data <- function(data){
+clean_data <- function(data, date_format){
   
-  names(data) <- tolower(data)
+  names(data) <- tolower(names(data))
+  if(date_format == 'other'){
+    data2 <- data %>%
+      mutate(date = anydate(date))
+  }else{
+    data2 <- data %>%
+      mutate(date = as.Date(date,
+                            format = date_format))
+  }
   
-  data %>%
-    mutate(data = anydate(date)) %>%
+  data2 %>%
+    mutate(transaction = as.numeric(gsub(pattern = ",",
+                                         replacement = "",
+                                         x = transaction))) %>%
     mutate(credit_or_debit = ifelse(transaction >= 0,
                                     'credit',
                                     'debit'),
-           first_of_month = format(date, '%Y-%m-01'))
+           first_of_month = as.Date(format(date, '%Y-%m-01')))
   
 }
 
@@ -24,11 +36,65 @@ running_total_by_date <- function(data){
     mutate(running_total = cumsum(sum_transaction))
 }
 
+running_total_plot <- function(data){
+  data %>%
+    ggplot(., aes(x = date, y = running_total))+
+    geom_line(colour = 'dodgerblue3')+
+    xlab('Date')+
+    scale_y_continuous(labels = dollar,
+                       name = 'Running Balance')
+}
+
 credit_debit_trend <- function(data){
   data %>%
     group_by(first_of_month,
              credit_or_debit) %>%
     summarise(sum_transaction = sum(abs(transaction)))
+}
+
+credit_debit_plot <- function(data){
+  data %>%
+    ggplot(., aes(x = first_of_month,
+                  y = sum_transaction,
+                  colour = credit_or_debit))+
+    geom_line()+
+    geom_point()+
+    scale_colour_brewer(palette = 'Set1',
+                      name = 'Transaction Type')+
+    scale_y_continuous(labels = dollar,
+                       name = 'Monthly Total')+
+    xlab('Date')
+    
+}
+
+monthly_difference <- function(data){
+  data %>%
+    group_by(first_of_month) %>%
+    summarise(sum_transaction = sum(transaction)) %>%
+    ungroup() %>%
+    arrange(first_of_month) %>%
+    mutate(cum_sum_transaction = cumsum(sum_transaction))
+}
+
+monthly_end_plot <- function(data){
+  p1 <- data %>%
+    ggplot(., aes(x = first_of_month,
+                  y = sum_transaction))+
+    geom_col()+
+    scale_y_continuous(labels = dollar,
+                       name = 'Credits - Debits')+
+    xlab('Date')
+  
+  p2 <- data %>%
+    ggplot(., aes(x = first_of_month,
+                  y = cum_sum_transaction))+
+    geom_line()+
+    geom_point()+
+    scale_y_continuous(labels = dollar,
+                       name = 'EOM Running Total')+
+    xlab('Month')
+  
+  gridExtra::grid.arrange(p1, p2, ncol = 1)
 }
 
 shinyServer(function(input, output) {
@@ -49,11 +115,29 @@ shinyServer(function(input, output) {
       NULL
     } else{
       data.upload() %>%
-        mutate(foo = 'bar bar')
+        clean_data(input$date_format)
     }
   })
   
   output$budget_table <- renderDataTable(budget_data_prep())
+  
+  output$running_balance_plot <- renderPlot(
+    budget_data_prep() %>%
+    running_total_by_date() %>%
+    running_total_plot()
+  )
+  
+  output$debit_credit_trend <- renderPlot(
+    budget_data_prep() %>%
+      credit_debit_trend() %>%
+      credit_debit_plot()
+  )
+  
+  output$ending_monthly_bal_plot <- renderPlot(
+    budget_data_prep() %>%
+      monthly_difference() %>%
+      monthly_end_plot()
+  )
   
   output$growth_rate_table <- renderTable(data.frame(
     'growth_3' = 10,

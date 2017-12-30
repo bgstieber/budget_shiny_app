@@ -40,10 +40,8 @@ By now, this analysis has become rather routine, and follows a fairly structured
     - Ending monthly balance
       - Bar chart
   - __Numerical Summaries__
-    - Table with total saved by month and saving rate 
-      - (credits_m - debits_m) / credits_m
-    - Table with monthly ending balance and % change from 6 months ago
-      - 6 months ago value might require some error / `NA` handling
+    - Table with monthly summaries
+      - Credits, debits, total, saving rate, running total, 6 month % change in running total
     - Expected growth rate
       - Simple linear model should do just fine here, will require a tabular output as well as a visual representation
       - Could present an interesting application for visualizing uncertainty...feel free to get creative in your design solution 

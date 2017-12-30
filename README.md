@@ -14,7 +14,7 @@ Every few weeks or so I do a fairly rudimentary analysis of my personal finances
       - How much have I saved in the last few months
       - How much has my balance grown in the last few months
       - If my savings trends were to continue, how much could I expect to have in 3, 6, or 12 months
-      - This requires the fitting of some form of a regression model (a simple linear model seems to do just fine)
+        - This requires the fitting of some form of a regression model (a simple linear model seems to do just fine)
       
 By now, this analysis has become rather routine, and follows a fairly structured flow. To save myself time (and to re-familiarize myself with git and Shiny), I decided building an automated system might be "fun". 
 

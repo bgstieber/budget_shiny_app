@@ -4,6 +4,7 @@ library(shinythemes)
 library(DT)
 # setup ui of app
 fluidPage(theme = shinytheme('flatly'),
+          h1('Checking Account Summary'),
           h5(
             'Code for this app can be found',
             a('here.', href = 'https://github.com/bgstieber/budget_shiny_app')
@@ -91,7 +92,7 @@ fluidPage(theme = shinytheme('flatly'),
                                                height = "600px")
                                   ),
                                   tabPanel(
-                                    'Ending Monthly Balance',
+                                    'Monthly Balance',
                                     plotOutput('ending_monthly_bal_plot',
                                                height = "600px")
                                   )

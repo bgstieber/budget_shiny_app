@@ -42,7 +42,12 @@ running_total_by_date <- function(data) {
 running_total_plot <- function(data) {
   data %>%
     ggplot(., aes(x = date, y = running_total)) +
-    geom_line(colour = 'dodgerblue3') +
+    geom_line(stat = 'smooth',
+              method = 'loess',
+              alpha = 0.5,
+              colour = '#b70101')+
+    geom_line(colour = 'dodgerblue3',
+              size = 1.2) +
     xlab('Date') +
     scale_y_continuous(labels = dollar,
                        name = 'Running Balance')
@@ -118,7 +123,7 @@ monthly_end_plot <- function(data) {
     geom_line() +
     geom_point() +
     scale_y_continuous(labels = dollar,
-                       name = 'EOM Running Total') +
+                       name = 'Monthly Running Total') +
     xlab('Month')
   
   gridExtra::grid.arrange(p1, p2, ncol = 1)
@@ -167,11 +172,15 @@ shinyServer(function(input, output) {
       mutate(
         six_month_change =
           (cum_sum_transaction - lag(cum_sum_transaction, 6)) /
+          cum_sum_transaction,
+        twelve_month_change =
+          (cum_sum_transaction - lag(cum_sum_transaction, 12)) /
           cum_sum_transaction
       ) %>%
       arrange(desc(first_of_month)) %>%
       datatable(
         .,
+        rownames = FALSE,
         colnames = c(
           'Month',
           'Credits',
@@ -179,7 +188,8 @@ shinyServer(function(input, output) {
           'Credits-Debits',
           'Saving Rate',
           'Running Sum',
-          '6 Month % Change'
+          '6 Month % Change',
+          '12 Month % Change'
         )
       ) %>%
       formatCurrency(
@@ -194,7 +204,8 @@ shinyServer(function(input, output) {
       formatPercentage(
         .,
         columns = c('saving_rate',
-                    'six_month_change'),
+                    'six_month_change',
+                    'twelve_month_change'),
         digits = 1
       )
   )

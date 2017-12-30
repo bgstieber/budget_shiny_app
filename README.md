@@ -1,9 +1,4 @@
----
-title: "App Description"
-author: "Brad Stieber"
-date: "December 30, 2017"
-output: html_document
----
+# App Description
 
 # Main Description
 

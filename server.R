@@ -2,6 +2,7 @@ library(shiny)
 library(tidyverse)
 library(anytime)
 library(scales)
+library(prophet)
 theme_set(theme_bw())
 
 clean_data <- function(data, date_format) {
@@ -37,6 +38,24 @@ running_total_by_date <- function(data) {
     ungroup() %>%
     arrange(date) %>%
     mutate(running_total = cumsum(sum_transaction))
+}
+
+generate_prophet_data <- function(data){
+  date_range <- range(data$date)
+  
+  prophet_df <- data.frame(ds = seq.Date(from = date_range[1],
+                                         to = date_range[2],
+                                         by = 'day'))
+  
+  prophet_df %>%
+    left_join(data, 
+              by = c('ds' = 'date')) %>%
+    mutate(y = ifelse(is.na(sum_transaction),
+                      0,
+                      sum_transaction)) %>%
+    arrange(ds) %>%
+    mutate(y = cumsum(y)) %>%
+    select(ds, y)
 }
 
 running_total_plot <- function(data) {
@@ -210,12 +229,38 @@ shinyServer(function(input, output) {
       )
   )
   
-  output$growth_rate_table <- renderTable(data.frame(
-    'growth_3' = 10,
-    'growth_6' = 12,
-    'growth_12' = 16
-  ))
+  # output$growth_rate_table <- renderTable(data.frame(
+  #   'growth_3' = 10,
+  #   'growth_6' = 12,
+  #   'growth_12' = 16
+  # ))
   
-  output$growth_rate_plot <- renderPlot(plot(1:10))
+  prophet_output <- reactive({
+    df <- budget_data_prep() %>%
+      running_total_by_date() %>%
+      generate_prophet_data()
+    
+    m <- prophet(df)
+    
+    future <- make_future_dataframe(m, periods = 365)
+    forecast <- predict(m, future)
+    
+    list(m, future, forecast)
+  })
+  
+  output$growth_rate_plot <- renderPlot({
+    
+    df <- budget_data_prep() %>%
+      running_total_by_date() %>%
+      generate_prophet_data()
+
+    m <- prophet(df)
+
+    future <- make_future_dataframe(m, periods = 365)
+    forecast <- predict(m, future)
+    
+    plot(m, forecast)
+  }
+  )
   
 })

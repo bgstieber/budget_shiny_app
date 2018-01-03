@@ -106,7 +106,7 @@ fluidPage(theme = shinytheme('flatly'),
                                 ),
                                 tabPanel(
                                   'Expected Balance Growth Rate',
-                                  tableOutput('growth_rate_table'),
+                                  #tableOutput('growth_rate_table'),
                                   plotOutput('growth_rate_plot',
                                              height = "600px")
                                 )

@@ -1,5 +1,7 @@
 # App Description
 
+The app is live! [Go check it out!](https://bgstieber.shinyapps.io/budget_shiny_app/)
+
 # Main Description
 
 Every few weeks or so I do a fairly rudimentary analysis of my personal finances, mainly investigating the balance of my checking account. The typical analysis will look something like:
@@ -43,6 +45,5 @@ By now, this analysis has become rather routine, and follows a fairly structured
     - Table with monthly summaries
       - Credits, debits, total, saving rate, running total, 6 month % change in running total
     - Expected growth rate
-      - Simple linear model should do just fine here, will require a tabular output as well as a visual representation
-      - Could present an interesting application for visualizing uncertainty...feel free to get creative in your design solution 
+      - We use the exceptional [__`prophet`__](https://github.com/facebook/prophet) package to build a time series forecast.
       

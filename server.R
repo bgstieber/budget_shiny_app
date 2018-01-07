@@ -5,6 +5,26 @@ library(scales)
 library(prophet)
 theme_set(theme_bw())
 
+generate_sim_data <- function(n = 1000, 
+                              mean = 1, 
+                              sd = 3){
+  
+  date_range <- seq.Date(Sys.Date() - 365,
+                         Sys.Date(),
+                         by = 'day')
+  
+  date_range_s <- sample(date_range,
+                         size = n,
+                         replace = (n > length(date_range)))
+  
+  x <- rnorm(n, mean, sd)
+  
+  data_frame(date = date_range_s,
+             transaction = x)
+  
+}
+
+
 clean_data <- function(data, date_format) {
   names(data) <- tolower(names(data))
   if (date_format == 'other') {
@@ -162,11 +182,16 @@ shinyServer(function(input, output) {
   })
   
   budget_data_prep <- reactive({
-    if (is.null(data.upload())) {
-      NULL
-    } else{
-      data.upload() %>%
-        clean_data(input$date_format)
+    if(input$data_type == 'upload'){
+      if (is.null(data.upload())) {
+        NULL
+      } else{
+        data.upload() %>%
+          clean_data(input$date_format)
+      }
+    }else{
+      generate_sim_data() %>%
+        clean_data(date_format = 'other')
     }
   })
   

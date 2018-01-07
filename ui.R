@@ -14,6 +14,20 @@ fluidPage(theme = shinytheme('flatly'),
           fluidRow(
             column(
               2,
+              radioButtons('data_type',
+                           'Data Selection',
+                           c('Upload Your Own' = 'upload',
+                             'Simulated Data' = 'simulated')),
+              conditionalPanel('input.data_type == "simulated"',
+                               
+                               p("The data we generate will be simulated from 
+                                 a N(1, 3) distribution. We generate 1,000
+                                 random draws across a time period of 365 days.
+                                 This simulated data is used to mainly demonstrate
+                                 the functionalities of this app.")
+                               
+                               ),
+              conditionalPanel('input.data_type == "upload"',
               h2('Upload Data'),
               fileInput(
                 'data_upload',
@@ -68,6 +82,7 @@ fluidPage(theme = shinytheme('flatly'),
                 column to numeric, we run the risk of improper coercion, resulting in NA
                 values. Use the Data Viewer tab to determine if you need to re-format
                 either the transaction or date columns."
+              )
               )
               ),
             
